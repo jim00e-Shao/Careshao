@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>訪客</title>
+<link rel="stylesheet" href="assets/styles.css"/>
+<script defer src="assets/app.js"></script>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="logo">💗 <span data-i18n="title">我照顧你放心</span></div>
+    <span class="badge" data-i18n="version">v1.1</span>
+  </div>
+  <div class="langs"></div>
+
+  <div class="card">
+    <div class="tabs">
+      <a id="tab-home" href="index.html" data-i18n="nav.home">首頁</a>
+      <a id="tab-bp" href="bp.html" data-i18n="nav.bp">血壓</a>
+      <a id="tab-visitor" href="#" class="active" data-i18n="nav.visitor">訪客</a>
+      <a id="tab-buy" href="buy.html" data-i18n="nav.buy">代買</a>
+      <a id="tab-diet" href="diet.html" data-i18n="nav.diet">飲食</a>
+      <a id="tab-water" href="water.html" data-i18n="nav.water">喝水</a>
+    </div>
+
+    <div id="mount"></div>
+  </div>
+</div>
+<script>
+  CareSite.mountLangButtons();
+  CareSite.setActiveTab("tab-visitor");
+  CareSite.loadSimplePage(CareSite.GIDS["訪客"], "mount");
+</script>
+</body>
+</html>

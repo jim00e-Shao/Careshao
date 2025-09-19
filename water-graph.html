@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>我照顧你放心｜喝水進度圖</title>
+  <style>
+    :root{
+      --bg:#faf6f1; --fg:#3c2c2c; --muted:#7c6a6a;
+      --card:#fff7ea; --accent:#ff9800; --accent-2:#fdd39c;
+      --chip:#eee; --chip-active:#ff9800; --chip-text:#fff;
+      --ring:#ffe5bf; --ring-fill:#ff9800;
+    }
+    *{box-sizing:border-box}
+    body{margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,'Noto Sans TC',sans-serif;
+         background:var(--bg); color:var(--fg); line-height:1.55;}
+    .wrap{max-width:960px; margin:auto; padding:20px 16px 56px;}
+    header{display:flex; align-items:center; gap:12px; margin-bottom:8px;}
+    header h1{margin:0; font-size:1.8rem; display:flex; align-items:center; gap:.5rem;}
+    header .ver{margin-left:.25rem; font-size:.85rem; color:var(--muted)}
+    .lang{margin:6px 0 16px; display:flex; gap:10px; flex-wrap:wrap;}
+    .lang button{border:1px solid #ddd; background:#fff; padding:.4rem .8rem;
+      border-radius:10px; cursor:pointer}
+    .lang button.active{background:var(--chip-active); color:var(--chip-text); border-color:transparent}
+    nav.tabs{display:flex; gap:.6rem; flex-wrap:wrap; margin:.25rem 0 20px}
+    nav.tabs a{display:inline-block; padding:.5rem 1rem; border-radius:14px; border:1px solid #ddd;
+      background:#fff; text-decoration:none; color:inherit}
+    nav.tabs a.active{background:var(--chip-active); color:var(--chip-text); border-color:transparent}
+
+    .card{background:#fff; border-radius:16px; box-shadow:0 6px 20px rgba(0,0,0,.06); padding:16px;}
+    .hero{display:grid; grid-template-columns: 260px 1fr; gap:18px; align-items:center;}
+    @media (max-width:720px){ .hero{grid-template-columns:1fr} }
+    .ring-box{display:grid; place-items:center; padding:8px}
+    svg{overflow:visible}
+    .kpi{display:flex; gap:18px; flex-wrap:wrap; margin-top:6px;}
+    .kpi .chip{background:var(--card); border:1px dashed #e5c99b; padding:.5rem .8rem; border-radius:12px}
+    .hint{margin-top:8px; font-weight:600}
+    .muted{color:var(--muted)}
+    .section-title{font-size:1.1rem; margin:18px 0 10px; font-weight:700}
+    .spacer{height:22px}
+    /* 舊版圖表插槽外框（可移除） */
+    .legacy{margin-top:18px; padding:12px; border:1px dashed #d8c7a1; border-radius:12px; background:#fffdf7}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div style="font-size:1.8rem">💗</div>
+      <h1 data-i18n="title">我照顧你放心</h1>
+      <span class="ver">v1.1</span>
+    </header>
+
+    <!-- 語言切換 -->
+    <div class="lang" role="group" aria-label="language">
+      <button data-lang="zh" class="active">繁體中文</button>
+      <button data-lang="id">Bahasa Indonesia</button>
+      <button data-lang="en">English</button>
+    </div>
+
+    <!-- 分頁按鈕 -->
+    <nav class="tabs">
+      <a href="index.html" data-i18n="home">首頁</a>
+      <a href="bp.html" data-i18n="bp">血壓</a>
+      <a href="visitor.html" data-i18n="visitor">訪客</a>
+      <a href="buy.html" data-i18n="buy">代買</a>
+      <a href="diet.html" data-i18n="diet">飲食</a>
+      <a href="water.html" data-i18n="water">喝水</a>
+      <a href="water-graph.html" class="active" data-i18n="waterGraph">喝水進度圖</a>
+    </nav>
+
+    <!-- 進度圖卡片 -->
+    <div class="card">
+      <div class="section-title" data-i18n="progressTitle">今日喝水進度</div>
+
+      <div class="hero">
+        <div class="ring-box">
+          <!-- 進度環 -->
+          <svg width="220" height="220" viewBox="0 0 220 220" aria-label="water-progress">
+            <!-- 背景環 -->
+            <circle cx="110" cy="110" r="92" stroke="var(--ring)" stroke-width="22" fill="none"/>
+            <!-- 進度環（由 JS 設定 strokeDashoffset） -->
+            <circle id="ring" cx="110" cy="110" r="92" stroke="var(--ring-fill)" stroke-width="22"
+                    stroke-linecap="round" fill="none"
+                    transform="rotate(-90 110 110)"/>
+            <!-- 中央文字 -->
+            <g dominant-baseline="middle" text-anchor="middle">
+              <text id="pct" x="110" y="98" font-size="34" font-weight="700">0%</text>
+              <text id="summary" x="110" y="132" font-size="14" class="muted">0 / 1500 cc</text>
+            </g>
+          </svg>
+        </div>
+
+        <div>
+          <div class="kpi">
+            <div class="chip"><span data-i18n="today">今日</span>：<b><span id="val">0</span> cc</b></div>
+            <div class="chip"><span data-i18n="target">目標</span>：<b><span id="goal">1500</span> cc</b></div>
+            <div class="chip"><span data-i18n="ratio">達成率</span>：<b><span id="ratio">0%</span></b></div>
+          </div>
+          <div class="hint" id="hintText">…</div>
+          <div class="muted" style="margin-top:8px" data-i18n="hintNote">
+            * 提示會依達成率自動變換。
+          </div>
+        </div>
+      </div>
+
+      <div class="spacer"></div>
+
+      <!-- 舊版飲水進度圖插槽（選擇性） -->
+      <div class="legacy">
+        <div class="section-title" data-i18n="legacyTitle">（可選）舊版進度圖</div>
+        <div class="muted" data-i18n="legacyHowto">
+          若你已有「飲水進度圖_250916_122437.html」，請把主要圖表區塊貼到下面這個 DIV 中：
+        </div>
+        <div id="legacy-graph" style="margin-top:10px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ===== i18n 文案 =====
+    const I18N = {
+      zh:{
+        title:"我照顧你放心",
+        home:"首頁", bp:"血壓", visitor:"訪客", buy:"代買", diet:"飲食",
+        water:"喝水", waterGraph:"喝水進度圖",
+        progressTitle:"今日喝水進度",
+        today:"今日", target:"目標", ratio:"達成率",
+        hintNote:"* 提示會依達成率自動變換。",
+        legacyTitle:"（可選）舊版進度圖",
+        legacyHowto:"若你已有「飲水進度圖_250916_122437.html」，請把主要圖表區塊貼到下面這個 DIV 中：",
+        tips:{
+          low:"今天先補一杯水吧！小口慢飲，對腎臟更溫和。",
+          mid:"喝得不錯～記得分時段補水，避免一次喝太多。",
+          near:"快達標了！再補個 200–300cc 就更棒。",
+          done:"太棒了！今天的水分已達標，記得晚上少量即可。"
+        }
+      },
+      id:{
+        title:"Aku Jaga, Kamu Tenang",
+        home:"Beranda", bp:"Tekanan Darah", visitor:"Tamu", buy:"Titip Beli",
+        diet:"Makan", water:"Minum", waterGraph:"Grafik Minum",
+        progressTitle:"Kemajuan Minum Hari Ini",
+        today:"Hari ini", target:"Target", ratio:"Pencapaian",
+        hintNote:"* Saran berubah otomatis sesuai persentase.",
+        legacyTitle:"(Opsional) Grafik versi lama",
+        legacyHowto:"Jika sudah punya file grafik lama, tempelkan blok utamanya ke DIV di bawah:",
+        tips:{
+          low:"Ayo minum segelas dulu. Teguk pelan agar nyaman di tubuh.",
+          mid:"Bagus! Minum bertahap sepanjang hari ya.",
+          near:"Hampir tercapai! Tambah 200–300cc lagi.",
+          done:"Mantap! Target hari ini tercapai, malam cukup sedikit saja."
+        }
+      },
+      en:{
+        title:"I Care For You",
+        home:"Home", bp:"Blood Pressure", visitor:"Visitors", buy:"Errands",
+        diet:"Diet", water:"Water", waterGraph:"Water Graph",
+        progressTitle:"Today's Hydration Progress",
+        today:"Today", target:"Target", ratio:"Achieved",
+        hintNote:"* Tips change automatically based on your progress.",
+        legacyTitle:"(Optional) Legacy Chart",
+        legacyHowto:"If you already have the legacy chart HTML, paste its main block into the DIV below:",
+        tips:{
+          low:"Start with a glass of water. Sip slowly for comfort.",
+          mid:"Nice! Keep hydrating in small portions.",
+          near:"Almost there! Add another 200–300cc.",
+          done:"Great job! You've hit today's target; keep it light tonight."
+        }
+      }
+    };
+
+    // ===== 語言切換 =====
+    const $ = (s,root=document)=>root.querySelector(s);
+    const $$ = (s,root=document)=>[...root.querySelectorAll(s)];
+    let lang = localStorage.getItem('pc_lang') || 'zh';
+    function applyI18n(){
+      const t = I18N[lang];
+      $$('[data-i18n]').forEach(el=>{
+        const key = el.getAttribute('data-i18n');
+        const seg = key.split('.');
+        let val = t;
+        seg.forEach(k=>{ if(val) val=val[k]; });
+        if(typeof val === 'string') el.textContent = val || '';
+      });
+      $('title').textContent = `${t.title}｜${I18N[lang].waterGraph}`;
+      $$('.lang button').forEach(b=>b.classList.toggle('active', b.dataset.lang===lang));
+      // 更新提示（因語言變更）
+      updateHint(currentRatio);
+    }
+    $$('.lang button').forEach(b=>{
+      b.addEventListener('click', ()=>{
+        lang = b.dataset.lang;
+        localStorage.setItem('pc_lang', lang);
+        applyI18n();
+      });
+    });
+
+    // ===== 進度運算（可用 URL 覆蓋：?today=1550&target=1500） =====
+    const url = new URL(location.href);
+    const todayVal = Number(url.searchParams.get('today') ?? localStorage.getItem('water_today') ?? 0);
+    const goalVal  = Number(url.searchParams.get('target') ?? localStorage.getItem('water_goal') ?? 1500);
+
+    // 也可在其它頁面把今日值寫進 localStorage：localStorage.setItem('water_today', 1550)
+    // 這頁就會自動抓到。
+
+    // 畫環
+    const R = 92, C = 2*Math.PI*R;
+    const ring = $('#ring');
+    ring.setAttribute('stroke-dasharray', C);
+    function setProgress(p){ // p: 0~1
+      const off = C*(1-p);
+      ring.setAttribute('stroke-dashoffset', off);
+      $('#pct').textContent = Math.round(p*100)+'%';
+    }
+
+    // 更新 KPI + 提示
+    let currentRatio = 0;
+    function updateHint(r){
+      const t = I18N[lang].tips;
+      let msg = t.low;
+      if(r >= 1) msg = t.done;
+      else if(r >= .85) msg = t.near;
+      else if(r >= .5) msg = t.mid;
+      $('#hintText').textContent = msg;
+    }
+
+    function init(){
+      $('#val').textContent = todayVal.toString();
+      $('#goal').textContent = goalVal.toString();
+      currentRatio = goalVal>0 ? Math.min(1, todayVal/goalVal) : 0;
+      $('#ratio').textContent = Math.round(currentRatio*100)+'%';
+      $('#summary').textContent = `${todayVal} / ${goalVal} cc`;
+      setProgress(currentRatio);
+      applyI18n();
+    }
+    init();
+
+    // =====（選擇）把舊檔案內容貼到 #legacy-graph 也能顯示 =====
+    // 你可以直接把舊版「飲水進度圖_XXXX.html」中的主要圖表 HTML 貼進下方：
+    // document.getElementById('legacy-graph').innerHTML = `<!-- 你的舊圖表 HTML 片段 -->`;
+  </script>
+</body>
+</html>

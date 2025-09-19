@@ -1,0 +1,35 @@
+:root{
+  --bg:#fff7ec;
+  --card:#fff;
+  --ink:#3b2f2f;
+  --accent:#ff9b2f;
+  --accent-weak:#ffe3c2;
+  --muted:#8a7c7c;
+  --ok:#3aa76d;
+  --warn:#d97706;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,Segoe UI,Roboto,Noto Sans TC,Arial}
+.container{max-width:980px;margin:0 auto;padding:16px}
+.header{display:flex;align-items:center;gap:12px;margin:6px 0 16px}
+.logo{font-size:28px}
+.badge{background:var(--accent-weak);color:var(--ink);padding:2px 8px;border-radius:10px;font-size:.8rem}
+.langs{margin:8px 0 12px;display:flex;gap:8px;flex-wrap:wrap}
+.langs button{border:1px solid #e4d6c6;background:#fff;border-radius:999px;padding:6px 12px;cursor:pointer}
+.langs button.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 18px}
+.tabs a{display:inline-block;background:#fff;border:1px solid #eadfd6;border-radius:12px;padding:10px 14px;text-decoration:none;color:var(--ink)}
+.tabs a.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.card{background:var(--card);border:1px solid #efe1d4;border-radius:16px;padding:14px;box-shadow:0 2px 6px rgba(0,0,0,.04)}
+.table-wrap{overflow:auto;border-radius:12px;border:1px solid #efe1d4;background:#fff}
+table{border-collapse:collapse;width:100%;min-width:720px}
+th,td{padding:10px 12px;border-bottom:1px solid #f2e9df;text-align:left;font-size:14px;white-space:nowrap}
+thead th{position:sticky;top:0;background:#fff9f1;border-bottom:1px solid #eadfd6;font-weight:600}
+.empty{color:var(--muted);padding:12px}
+.hint{font-size:.95rem;color:var(--muted)}
+.footer-space{height:28px}
+.kpi-row{display:flex;gap:12px;flex-wrap:wrap;margin:14px 0}
+.kpi{flex:1 1 180px;background:#fff;border:1px dashed #f0d3b7;border-radius:12px;padding:10px}
+.progress{height:14px;background:#f3eadf;border-radius:999px;overflow:hidden}
+.progress > i{display:block;height:100%;background:var(--ok);width:0%}
+.small{font-size:.86rem;color:var(--muted)}

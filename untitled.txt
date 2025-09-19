@@ -1,0 +1,11 @@
+/        ← repo 根目錄
+├─ index.html
+├─ bp.html
+├─ visitor.html
+├─ buy.html
+├─ diet.html
+├─ water.html
+├─ water-graph.html   ← 先放空，或把你現成的「喝水進度圖」HTML貼過來
+└─ assets/
+   ├─ styles.css
+   └─ app.js
