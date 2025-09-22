@@ -1,220 +1,107 @@
-<!doctype html>
-
-<html lang="zh-Hant">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>看護紀錄首頁</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-  </head>
-  <body class="bg-pink-50 text-slate-800 font-sans">
-    <main class="max-w-5xl mx-auto p-6">
-      <!-- 語言選單 -->
-      <div class="flex flex-wrap items-center justify-center gap-2 mb-4">
-        <button data-lang="zh" class="lang-btn active rounded-full px-3 py-1 text-sm font-semibold bg-white/80 border border-pink-200 shadow hover:shadow-md">✔️ 中文</button>
-        <button data-lang="en" class="lang-btn rounded-full px-3 py-1 text-sm font-semibold bg-white/60 border border-pink-200 shadow hover:shadow-md">English</button>
-        <button data-lang="id" class="lang-btn rounded-full px-3 py-1 text-sm font-semibold bg-white/60 border border-pink-200 shadow hover:shadow-md">Bahasa Indonesia</button>
-      </div><header class="mb-6 text-center">
-    <h1 id="t-title" class="text-3xl font-bold text-pink-700">看護紀錄首頁</h1>
-    <p id="t-subtitle" class="text-sm text-slate-600 mt-2">一鍵前往各分頁、登錄表單、喝水進度圖與體重變化圖</p>
-  </header>
-
+<!DOCTYPE html><html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>我照顧你放心</title>
   <script>
-    const SHEET_ID = "1keAp5yTtGV0VT9yxkPXVpdhJxGiypiV7DnEZpFgxfBs";
-    const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSdaS6FiOrCdvEp4JXhedfnOuLek-AV9PfzrLbwewLSAmQ-mxg/viewform";
-    const baseSheetUrl = (gid) => `https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit#gid=${gid}`;
-
-    // Tabs 使用中文名作為 key（連結仍指向原 gid）
-    const TABS = [
-      { name: "表單回應1", gid: 1997737894 },
-      { name: "身體", gid: 128552717 },
-      { name: "護理", gid: 1985223179 },
-      { name: "血壓", gid: 2010169356 },
-      { name: "血糖", gid: 1308241683 },
-      { name: "小便", gid: 1217043471 },
-      { name: "大便", gid: 135944068 },
-      { name: "訪客", gid: 2061789603 },
-      { name: "復健", gid: 694319844 },
-      { name: "飲食", gid: 426173260 },
-      { name: "喝水", gid: 351311067 },
-      { name: "喝水進度圖", gid: 1529024056 },
-      { name: "代買", gid: 1520775045 },
-      { name: "體重", gid: 2058618108 },
-      { name: "其他", gid: 2066907080 }
-    ];
-
-    // 分頁名稱對照表（中文->英文/印尼文）
-    const TAB_I18N = {
-      en: {
-        "表單回應1": "Form Responses",
-        "身體": "Body",
-        "護理": "Nursing",
-        "血壓": "Blood Pressure",
-        "血糖": "Blood Sugar",
-        "小便": "Urination",
-        "大便": "Defecation",
-        "訪客": "Visitor",
-        "復健": "Rehabilitation",
-        "飲食": "Diet",
-        "喝水": "Water Intake",
-        "喝水進度圖": "Water Progress Chart",
-        "代買": "Purchase",
-        "體重": "Weight",
-        "其他": "Others"
-      },
-      id: {
-        "表單回應1": "Respon Formulir",
-        "身體": "Tubuh",
-        "護理": "Perawatan",
-        "血壓": "Tekanan Darah",
-        "血糖": "Gula Darah",
-        "小便": "Buang Air Kecil",
-        "大便": "Buang Air Besar",
-        "訪客": "Pengunjung",
-        "復健": "Rehabilitasi",
-        "飲食": "Pola Makan",
-        "喝水": "Minum Air",
-        "喝水進度圖": "Grafik Asupan Air",
-        "代買": "Titip Beli",
-        "體重": "Berat Badan",
-        "其他": "Lainnya"
-      }
-    };
-
-    // 介面 i18n 字典
+    // === 多語言字典 ===
     const I18N = {
       zh: {
-        title: "看護紀錄首頁",
-        subtitle: "一鍵前往各分頁、登錄表單、喝水進度圖與體重變化圖",
         feature_form: "登錄表單",
         feature_water: "每日喝水進度圖",
         feature_weight: "體重變化圖",
-        all_tabs: "全部分頁",
-        footer: "💖 若無法開啟，請確認試算表與表單的分享權限已設為「知道連結的任何人可檢視」。"
+        all_pages: "全部分頁"
       },
       en: {
-        title: "Care Record Home",
-        subtitle: "Quick links to tabs, entry form, water-intake chart, and weight chart",
-        feature_form: "Entry Form",
-        feature_water: "Daily Water Intake Chart",
-        feature_weight: "Weight Change Chart",
-        all_tabs: "All Tabs",
-        footer: "💖 If it won't open, make sure sharing is set to 'Anyone with the link can view'."
+        feature_form: "Log Form",
+        feature_water: "Water Progress",
+        feature_weight: "Weight Chart",
+        all_pages: "All Pages"
       },
       id: {
-        title: "Beranda Catatan Perawatan",
-        subtitle: "Tautan cepat ke tab, formulir entri, grafik asupan air, dan grafik berat badan",
-        feature_form: "Formulir Entri",
-        feature_water: "Grafik Asupan Air Harian",
-        feature_weight: "Grafik Perubahan Berat Badan",
-        all_tabs: "Semua Tab",
-        footer: "💖 Jika tidak bisa dibuka, pastikan berbagi disetel ke 'Siapa pun yang memiliki tautan dapat melihat'."
+        feature_form: "Formulir Catatan",
+        feature_water: "Grafik Minum Harian",
+        feature_weight: "Grafik Berat Badan",
+        all_pages: "Semua Halaman"
       }
-    };
+    };let currentLang = localStorage.getItem("lang") || "zh";
 
-    // 置頂功能按鈕 (標籤由 i18n 控制)
-    const FEATURE_BUTTONS = [
-      { key: "feature_form", url: FORM_URL, emoji: "📝", color: "bg-pink-200 hover:bg-pink-300" },
-      { key: "feature_water", url: baseSheetUrl(1529024056), emoji: "💧", color: "bg-blue-200 hover:bg-blue-300" },
-      { key: "feature_weight", url: baseSheetUrl(2058618108), emoji: "⚖️", color: "bg-green-200 hover:bg-green-300" }
-    ];
+function t(key) {
+  return I18N[currentLang][key] || key;
+}
 
-    function getTabDisplayName(zhName, lang) {
-      if (lang === 'zh') return zhName;
-      const map = TAB_I18N[lang] || {};
-      return map[zhName] || zhName; // 若無翻譯，退回中文
-    }
+// === Google Sheets 基本網址 ===
+const BASE_URL = "https://docs.google.com/spreadsheets/d/1m2erIP9vW4L_Tmpu87c8tffRbdG7G7blxT7auC-havY/edit";
+function baseSheetUrl(gid){ return `${BASE_URL}?gid=${gid}`; }
 
-    function renderUI(lang) {
-      const t = I18N[lang] || I18N.zh;
-      document.getElementById('t-title').textContent = t.title;
-      document.getElementById('t-subtitle').textContent = t.subtitle;
-      document.getElementById('t-alltabs').textContent = t.all_tabs;
-      document.getElementById('t-footer').textContent = t.footer;
+const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSd2TnHCLOAjaYwL1p29U0wXmsOjSKt6svV2qDX3UqB0KAjYlw/viewform";
 
-      // 置頂功能按鈕
-      const featureWrap = document.getElementById("feature-buttons");
-      featureWrap.innerHTML = '';
-      FEATURE_BUTTONS.forEach(btn => {
-        const a = document.createElement("a");
-        a.href = btn.url;
-        a.target = "_blank";
-        a.rel = "noopener noreferrer";
-        a.className = `${btn.color} flex items-center justify-center gap-2 rounded-xl px-4 py-3 shadow hover:shadow-lg transition text-slate-700 font-semibold`;
-        a.innerHTML = `<span class=\"text-xl\">${btn.emoji}</span><span>${t[btn.key]}</span>`;
-        featureWrap.appendChild(a);
-      });
+// 置頂功能按鈕 (已將喝水改為 water.html)
+const FEATURE_BUTTONS = [
+  { key: "feature_form",  url: FORM_URL,                 emoji: "📝", color: "bg-pink-200 hover:bg-pink-300" },
+  { key: "feature_water", url: "water.html",             emoji: "💧", color: "bg-blue-200 hover:bg-blue-300" },
+  { key: "feature_weight",url: baseSheetUrl(2058618108), emoji: "⚖️", color: "bg-green-200 hover:bg-green-300" }
+];
 
-      // 語言按鈕外觀
-      document.querySelectorAll('.lang-btn').forEach(b=>{
-        b.classList.remove('active');
-        b.style.opacity = 0.75;
-        if (b.dataset.lang === lang) {
-          b.classList.add('active');
-          b.textContent = (lang==='zh'? '✔️ 中文' : lang==='en' ? '✔️ English' : '✔️ Bahasa Indonesia');
-          b.style.opacity = 1;
-        } else {
-          b.textContent = (b.dataset.lang==='zh'? '中文' : b.dataset.lang==='en' ? 'English' : 'Bahasa Indonesia');
-        }
-      })
+const ALL_PAGES = [
+  { name: "護理", gid: 896880297 },
+  { name: "血壓", gid: 1575861756 },
+  { name: "飲食", gid: 1286045787 },
+  { name: "喝水", gid: 1867949360 },
+  { name: "體重", gid: 2058618108 }
+];
 
-      // 重新建構 Tabs（以目前語言顯示）
-      buildTabs(lang);
-    }
+function renderUI(){
+  // 功能按鈕
+  const btnContainer = document.getElementById("feature-buttons");
+  FEATURE_BUTTONS.forEach(b => {
+    const a = document.createElement("a");
+    a.href = b.url;
+    a.target = "_self"; // 改為同分頁開啟
+    a.className = `m-2 px-4 py-2 rounded-xl shadow ${b.color}`;
+    a.textContent = `${b.emoji} ${t(b.key)}`;
+    btnContainer.appendChild(a);
+  });
 
-    function initLang() {
-      const saved = localStorage.getItem('care-lang') || 'zh';
-      renderUI(saved);
-      document.querySelectorAll('.lang-btn').forEach(btn=>{
-        btn.addEventListener('click', ()=>{
-          const lang = btn.dataset.lang;
-          localStorage.setItem('care-lang', lang);
-          renderUI(lang);
-        });
-      })
-    }
+  // 全部分頁
+  const list = document.getElementById("all-pages");
+  ALL_PAGES.forEach(p => {
+    const li = document.createElement("li");
+    const a = document.createElement("a");
+    a.href = baseSheetUrl(p.gid);
+    a.target = "_blank";
+    a.textContent = p.name;
+    li.appendChild(a);
+    list.appendChild(li);
+  });
 
-    // 建立分頁按鈕（會依語言顯示名稱，但連結固定對應 gid）
-    function buildTabs(lang = 'zh') {
-      const tabsWrap = document.getElementById("tabs-grid");
-      tabsWrap.innerHTML = '';
-      TABS.forEach(tab => {
-        const a = document.createElement("a");
-        a.href = baseSheetUrl(tab.gid);
-        a.target = "_blank";
-        a.rel = "noopener noreferrer";
-        a.className = "rounded-xl border border-pink-100 bg-white p-4 shadow hover:shadow-md transition flex items-center justify-between hover:bg-pink-50";
-        const displayName = getTabDisplayName(tab.name, lang);
-        a.innerHTML = `
-          <div class="flex items-center gap-2">
-            <span class="text-base font-semibold text-pink-700">${displayName}</span>
-          </div>
-          <div class="text-pink-400">❤</div>
-        `;
-        tabsWrap.appendChild(a);
-      });
-    }
+  document.getElementById("all-pages-title").textContent = t("all_pages");
+}
 
-    document.addEventListener("DOMContentLoaded", () => {
-      // 先渲染中文，再由 initLang 讀取偏好語言重渲染
-      buildTabs('zh');
-      initLang();
-    });
+function changeLang(lang){
+  currentLang = lang;
+  localStorage.setItem("lang", lang);
+  location.reload();
+}
+
+window.onload = renderUI;
+
   </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-pink-50 text-center">
+  <header class="bg-pink-400 text-white py-4 text-2xl font-bold">我照顧你放心</header>  <div class="p-4">
+    <div id="feature-buttons" class="flex flex-wrap justify-center"></div><div class="mt-6">
+  <h2 id="all-pages-title" class="text-lg font-semibold mb-2"></h2>
+  <ul id="all-pages" class="space-y-2"></ul>
+</div>
 
-  <!-- 置頂功能按鈕 -->
-  <section class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8" id="feature-buttons"></section>
+<div class="mt-6">
+  <button onclick="changeLang('zh')">中文</button>
+  <button onclick="changeLang('en')">English</button>
+  <button onclick="changeLang('id')">Bahasa</button>
+</div>
 
-  <!-- 全部分頁按鈕 -->
-  <section>
-    <h2 id="t-alltabs" class="text-lg font-semibold mb-3 text-pink-700">全部分頁</h2>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="tabs-grid"></div>
-  </section>
-
-  <footer id="t-footer" class="mt-10 text-xs text-slate-500 text-center">
-    💖 若無法開啟，請確認試算表與表單的分享權限已設為「知道連結的任何人可檢視」。
-  </footer>
-</main>
-
-  </body>
+  </div>
+</body>
 </html>
