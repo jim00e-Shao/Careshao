@@ -63,62 +63,8 @@
         a.rel = "noopener noreferrer";
         a.className = "rounded-xl border border-pink-100 bg-white p-4 shadow hover:shadow-md transition flex items-center justify-between hover:bg-pink-50";
         a.innerHTML = `
-          <div>
-            <div class="text-base font-semibold text-pink-700">${tab.name}</div>
-            <div class="text-xs text-slate-400">gid=${tab.gid}</div>
-          </div>
-          <div class="text-pink-400">❤</div>
-        `;
-        tabsWrap.appendChild(a);
-      });
-    });
-  </script>
-
-  <section class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8" id="feature-buttons"></section>
-
-  <section>
-    <h2 class="text-lg font-semibold mb-3 text-pink-700">全部分頁</h2>
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="tabs-grid"></div>
-  </section>
-
-  <footer class="mt-10 text-xs text-slate-500 text-center">
-    💖 若無法開啟，請確認試算表與表單的分享權限已設為「知道連結的任何人可檢視」。
-  </footer>
-</main>
-
-  </body>
-</html>    ];
-
-    const FEATURE_BUTTONS = [
-      { label: "登錄表單", url: FORM_URL, emoji: "📝", color: "bg-pink-200 hover:bg-pink-300" },
-      { label: "每日喝水進度圖", url: baseSheetUrl(1529024056), emoji: "💧", color: "bg-blue-200 hover:bg-blue-300" },
-      { label: "體重變化圖", url: baseSheetUrl(2058618108), emoji: "⚖️", color: "bg-green-200 hover:bg-green-300" }
-    ];
-
-    document.addEventListener("DOMContentLoaded", () => {
-      const featureWrap = document.getElementById("feature-buttons");
-      const tabsWrap = document.getElementById("tabs-grid");
-
-      FEATURE_BUTTONS.forEach(btn => {
-        const a = document.createElement("a");
-        a.href = btn.url;
-        a.target = "_blank";
-        a.rel = "noopener noreferrer";
-        a.className = `${btn.color} flex items-center justify-center gap-2 rounded-xl px-4 py-3 shadow hover:shadow-lg transition text-slate-700 font-semibold`;
-        a.innerHTML = `<span class="text-xl">${btn.emoji}</span><span>${btn.label}</span>`;
-        featureWrap.appendChild(a);
-      });
-
-      TABS.forEach(tab => {
-        const a = document.createElement("a");
-        a.href = baseSheetUrl(tab.gid);
-        a.target = "_blank";
-        a.rel = "noopener noreferrer";
-        a.className = "rounded-xl border border-pink-100 bg-white p-4 shadow hover:shadow-md transition flex items-center justify-between hover:bg-pink-50";
-        a.innerHTML = `
-          <div>
-            <div class="text-base font-semibold text-pink-700">${tab.name}</div>
-            <div class="text-xs text-slate-400">gid=${tab.gid}</div>
+          <div class="flex items-center gap-2">
+            <span class="text-base font-semibold text-pink-700">${tab.name}</span>
           </div>
           <div class="text-pink-400">❤</div>
         `;
