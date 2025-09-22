@@ -1,116 +1,144 @@
-<!DOCTYPE html>
-<html lang="zh">
+<!DOCTYPE html><html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>我照顧你放心</title>
-  <script>
-    // === 多語言字典 ===
-    const I18N = {
-      zh: {
-        feature_form: "登錄表單",
-        feature_water: "每日喝水進度圖",
-        feature_weight: "體重變化圖",
-        all_pages: "全部分頁"
-      },
-      en: {
-        feature_form: "Log Form",
-        feature_water: "Water Progress",
-        feature_weight: "Weight Chart",
-        all_pages: "All Pages"
-      },
-      id: {
-        feature_form: "Formulir Catatan",
-        feature_water: "Grafik Minum Harian",
-        feature_weight: "Grafik Berat Badan",
-        all_pages: "Semua Halaman"
-      }
-    };
-
-    let currentLang = localStorage.getItem("lang") || "zh";
-
-    function t(key) {
-      return I18N[currentLang][key] || key;
-    }
-
-    // === Google Sheets 基本網址 ===
-    const BASE_URL = "https://docs.google.com/spreadsheets/d/1m2erIP9vW4L_Tmpu87c8tffRbdG7G7blxT7auC-havY/edit";
-    function baseSheetUrl(gid){ return `${BASE_URL}?gid=${gid}`; }
-
-    const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSd2TnHCLOAjaYwL1p29U0wXmsOjSKt6svV2qDX3UqB0KAjYlw/viewform";
-
-    // 置頂功能按鈕 (已將喝水改為 water.html)
-    const FEATURE_BUTTONS = [
-      { key: "feature_form",  url: FORM_URL,                 emoji: "📝", color: "bg-pink-200 hover:bg-pink-300" },
-      { key: "feature_water", url: "water.html",             emoji: "💧", color: "bg-blue-200 hover:bg-blue-300" },
-      { key: "feature_weight",url: baseSheetUrl(2058618108), emoji: "⚖️", color: "bg-green-200 hover:bg-green-300" }
-    ];
-
-    const ALL_PAGES = [
-      { name: "護理", gid: 896880297 },
-      { name: "血壓", gid: 1575861756 },
-      { name: "飲食", gid: 1286045787 },
-      { name: "喝水", gid: 1867949360 },
-      { name: "體重", gid: 2058618108 }
-    ];
-
-    function renderUI(){
-      // 功能按鈕
-      const btnContainer = document.getElementById("feature-buttons");
-      FEATURE_BUTTONS.forEach(b => {
-        const a = document.createElement("a");
-        a.href = b.url;
-        a.target = "_self"; // 改為同分頁開啟
-        a.className = `m-2 px-4 py-2 rounded-xl shadow ${b.color}`;
-        a.textContent = `${b.emoji} ${t(b.key)}`;
-        btnContainer.appendChild(a);
-      });
-
-      // 全部分頁
-      const list = document.getElementById("all-pages");
-      ALL_PAGES.forEach(p => {
-        const li = document.createElement("li");
-        const a = document.createElement("a");
-        a.href = baseSheetUrl(p.gid);
-        a.target = "_blank";
-        a.textContent = p.name;
-        li.appendChild(a);
-        list.appendChild(li);
-      });
-
-      document.getElementById("all-pages-title").textContent = t("all_pages");
-    }
-
-    function changeLang(lang){
-      currentLang = lang;
-      localStorage.setItem("lang", lang);
-      location.reload();
-    }
-
-    window.onload = renderUI;
-  </script>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>每日喝水進度圖（精簡版）</title>
+  <style>
+    body{font-family:system-ui, -apple-system, Segoe UI, Roboto, Arial, "Noto Sans", sans-serif;background:#ffeef5;margin:0;color:#334155;text-align:center}
+    header{background:#ff85a2;color:#fff;padding:16px 10px;font-weight:700;font-size:20px}
+    .card{background:#fff;margin:20px auto;padding:20px;border-radius:16px;box-shadow:0 4px 10px rgba(0,0,0,.08);width:92%;max-width:560px}
+    .row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+    input[type=number],select,button{padding:10px 12px;border-radius:10px;border:1px solid #d1d5db;font-size:16px}
+    button{background:#4285f4;border:none;color:#fff;cursor:pointer}
+    button:hover{background:#3367d6}
+    .btn-danger{background:#ef4444}
+    .btn-danger:hover{background:#dc2626}
+    .status{font-size:12px;margin-top:6px}
+    .status.ok{color:#059669}.status.warn{color:#d97706}.status.err{color:#dc2626}
+    .progress-container{margin:18px 0}
+    .circle{position:relative;width:220px;height:220px;border-radius:50%;background:conic-gradient(#4285f4 calc(var(--percent) * 1%), #e5e7eb 0);display:flex;align-items:center;justify-content:center;margin:auto;transition:background .6s ease}
+    .circle span{position:absolute;font-size:20px;font-weight:700;color:#374151;line-height:1.3}
+  </style>
 </head>
-<body class="bg-pink-50 text-center">
-  <header class="bg-pink-400 text-white py-4 text-2xl font-bold">我照顧你放心</header>
-
-  <div class="p-4">
-    <div id="feature-buttons" class="flex flex-wrap justify-center"></div>
-
-    <div class="mt-6">
-      <h2 id="all-pages-title" class="text-lg font-semibold mb-2"></h2>
-      <ul id="all-pages" class="space-y-2"></ul>
+<body>
+  <header>每日喝水進度圖（精簡版）</header>  <div class="card">
+    <h2>我的喝水紀錄</h2>
+    <div class="row" style="margin-bottom:6px">
+      <label for="goal">今日目標：</label>
+      <select id="goal" onchange="changeGoal()">
+        <option value="1500">1500 cc</option>
+        <option value="1800">1800 cc</option>
+        <option value="2000" selected>2000 cc</option>
+        <option value="2500">2500 cc</option>
+      </select>
     </div>
-
-    <div class="mt-6">
-      <button onclick="changeLang('zh')">中文</button>
-      <button onclick="changeLang('en')">English</button>
-      <button onclick="changeLang('id')">Bahasa</button>
+    <div class="row">
+      <input type="number" id="waterInput" placeholder="輸入喝水量 (cc)" min="1" max="10000" />
+      <button id="btnAdd" onclick="addWater()">新增</button>
+      <button id="btnReset" class="btn-danger" onclick="resetDaily()">重置</button>
     </div>
-  </div>
-</body>
+    <div id="syncStatus" class="status warn">尚未同步</div><div class="progress-container">
+  <div class="circle" id="progressCircle" style="--percent:0"><span id="progressText">0 / 2000 cc<br/>0%</span></div>
+</div>
+<div id="note">加油，還差 2000 cc！</div>
+
+  </div>  <script>
+    // ===== 讀取 ?api= 參數（若無則使用預設） =====
+    const params = new URLSearchParams(location.search);
+    const API_URL = params.get('api') || 'https://script.google.com/macros/s/AKfycbxxxx/exec'; // ← 可在首頁以 ?api= 傳入
+
+    // LocalStorage keys（沿用既有約定，方便與其他頁同步）
+    const LS = { cur:'waterCurrent', goal:'waterGoal', last:'lastDate' };
+
+    let goal = parseInt(localStorage.getItem(LS.goal)) || 2000;
+    let current = parseInt(localStorage.getItem(LS.cur) || '0');
+
+    document.getElementById('goal').value = goal;
+
+    // ===== UI 更新 =====
+    function updateProgress(){
+      const percent = Math.min((current / Math.max(goal,1)) * 100, 150);
+      const circle = document.getElementById('progressCircle');
+      const text = document.getElementById('progressText');
+      const note = document.getElementById('note');
+      circle.style.setProperty('--percent', percent);
+      circle.style.background = `conic-gradient(#4285f4 ${percent}%, #e5e7eb 0)`;
+      text.innerHTML = `${current} / ${goal} cc<br/>${percent.toFixed(0)}%`;
+      note.textContent = current >= goal ? '注意，超過目標啦 💧' : `加油，還差 ${Math.max(goal - current, 0)} cc！`;
+    }
+
+    function persist(){
+      localStorage.setItem(LS.cur, String(current));
+      localStorage.setItem(LS.goal, String(goal));
+      localStorage.setItem(LS.last, new Date().toDateString());
+    }
+
+    // ===== 動作 =====
+    async function addWater(){
+      const v = parseInt(document.getElementById('waterInput').value);
+      if (isNaN(v) || v <= 0) return;
+      current += v; persist(); updateProgress();
+      document.getElementById('waterInput').value = '';
+      await syncToday();
+    }
+
+    async function resetDaily(){
+      current = 0; persist(); updateProgress();
+      await syncToday();
+    }
+
+    function changeGoal(){
+      goal = parseInt(document.getElementById('goal').value) || 2000;
+      persist(); updateProgress();
+      syncToday();
+    }
+
+    // ===== 與 Apps Script 同步（每日一列 Upsert） =====
+    function todayISO(){ return new Date().toISOString().slice(0,10); }
+
+    async function syncToday(){
+      const el = document.getElementById('syncStatus');
+      if (!API_URL || API_URL.includes('AKfycbxxxx')) { el.textContent = '未設定 API_URL（僅本機儲存）'; el.className='status warn'; return; }
+      try{
+        el.textContent = '同步中…'; el.className='status warn';
+        const res = await fetch(API_URL, {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({ date: todayISO(), amount: current, goal })
+        });
+        const j = await res.json();
+        if (j && j.status === 'ok'){ el.textContent = '已同步到雲端 ✅'; el.className='status ok'; }
+        else { throw new Error('bad response'); }
+      }catch(err){
+        console.error(err);
+        el.textContent = '同步失敗（保留在本機）'; el.className='status err';
+      }
+    }
+
+    // ===== 開頁：先讀雲端今天數據，再套回畫面（若 API 無法使用則用本機值） =====
+    async function loadToday(){
+      const el = document.getElementById('syncStatus');
+      if (!API_URL || API_URL.includes('AKfycbxxxx')){ updateProgress(); return; }
+      try{
+        const r = await fetch(API_URL + '?mode=today');
+        const j = await r.json();
+        if (j && j.status === 'ok'){
+          goal = parseInt(j.goal) || goal; current = parseInt(j.amount) || 0;
+          localStorage.setItem(LS.goal, String(goal));
+          localStorage.setItem(LS.cur, String(current));
+          localStorage.setItem(LS.last, new Date(j.date).toDateString());
+          el.textContent = '已從雲端載入 ✅'; el.className='status ok';
+        }
+      }catch(err){ el.textContent = '雲端載入失敗（使用本機資料）'; el.className='status err'; }
+      updateProgress();
+    }
+
+    // 初始化
+    (async function init(){
+      // 隔日自動歸零（僅本機判斷）
+      const last = localStorage.getItem(LS.last);
+      const today = new Date().toDateString();
+      if (last && last !== today){ current = 0; persist(); }
+      await loadToday();
+    })();
+  </script></body>
 </html>
-
-
-{"updates":[{"pattern":".*","multiple":true,"replacement":"<!DOCTYPE html>\n<html lang="zh">\n<head>\n  <meta charset="UTF-8" />\n  <meta name="viewport" content="width=device-width, initial-scale=1.0" />\n  <title>每日喝水進度圖</title>\n  <style>\n    body{font-family:Arial, sans-serif;background:#ffeef5;margin:0;color:#1f2937;text-align:center}\n    header{background:#ff85a2;color:#fff;padding:16px 10px;font-weight:700;font-size:22px}\n    .card{background:#fff;margin:20px auto;padding:20px;border-radius:16px;box-shadow:0 4px 10px rgba(0,0,0,.08);width:90%;max-width:680px}\n    .row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}\n    input[type=number],select,button{padding:10px 12px;border-radius:10px;border:1px solid #d1d5db;font-size:16px}\n    button{background:#4285f4;border:none;color:#fff;cursor:pointer}\n    button:hover{background:#3367d6}\n    .btn-ghost{background:#eef3ff;color:#2d51c4}\n    .btn-danger{background:#ef4444}\n    .btn-danger:hover{background:#dc2626}\n    .status{font-size:12px;margin-top:6px}\n    .status.ok{color:#059669}.status.warn{color:#d97706}.status.err{color:#dc2626}\n    .badge{display:inline-block;padding:2px 8px;border-radius:9999px;font-size:12px;margin-left:6px}\n    .badge.offline{background:#fef3c7;color:#92400e}\n    .badge.online{background:#dcfce7;color:#065f46}\n    .progress-container{margin:18px 0}\n    .circle{position:relative;width:220px;height:220px;border-radius:50%;background:conic-gradient(#4285f4 calc(var(--percent) * 1%), #e5e7eb 0);display:flex;align-items:center;justify-content:center;margin:auto;transition:background .6s ease}\n    .circle span{position:absolute;font-size:20px;font-weight:700;color:#374151;line-height:1.3}\n    canvas{max-width:100%}\n  </style>\n</head>\n<body>\n  <header>\n    每日喝水進度圖\n    <span id="netBadge" class="badge offline" title="目前為離線或未連上 API">離線模式</span>\n  </header>\n\n  <div class="card">\n    <h2>我的喝水紀錄（雲端同步）</h2>\n    <div class="row">\n      <label for="goal">今日目標：</label>\n      <select id="goal" onchange="changeGoal()">\n        <option value="1500">1500 cc</option>\n        <option value="1800">1800 cc</option>\n        <option value="2000" selected>2000 cc</option>\n        <option value="2500">2500 cc</option>\n      </select>\n    </div>\n    <div class="row">\n      <input type="number" id="waterInput" placeholder="輸入喝水量 (cc)" min="1" max="10000" />\n      <button id="btnAdd" onclick="addWater()">新增</button>\n      <button id="btnReset" class="btn-danger" onclick="resetDaily()">重置</button>\n      <button id="btnSync" class="btn-ghost" onclick="manualSync()">立即同步</button>\n    </div>\n    <div id="syncStatus" class="status warn">尚未同步</div>\n\n    <div class="progress-container">\n      <div class="circle" id="progressCircle" style="--percent:0"><span id="progressText">0 / 2000 cc<br/>0%</span></div>\n    </div>\n    <div id="note">加油，還差 2000 cc！</div>\n    <div id="celebration" style="display:none">🎉 恭喜完成今日喝水目標！</div>\n  </div>\n\n  <div class="card">\n    <h2>最近 7 天喝水完成率</h2>\n    <canvas id="historyChart" width="680" height="280"></canvas>\n  </div>\n\n  <script>\n    // ===== 工具 & 常數 =====\n    function todayISO(){ return new Date().toISOString().slice(0,10); }\n    const API_URL = "https://script.google.com/macros/s/AKfycbxxxxxxx/exec"; // ← 換成你的 exec 連結\n    const LS = { cur:'waterCurrent', goal:'waterGoal', last:'lastDate', hist:'waterHistory', pend:'waterPending' };\n\n    // 安全 fetch（含逾時）\n    async function fetchWithTimeout(url, opts={}, timeoutMs=8000){\n      const ctrl = new AbortController();\n      const t = setTimeout(()=>ctrl.abort(), timeoutMs);\n      try{ return await fetch(url, { ...opts, signal: ctrl.signal }); }\n      finally{ clearTimeout(t); }\n    }\n\n    function setBadge(online){\n      const el = document.getElementById('netBadge');\n      if (online){ el.className = 'badge online'; el.textContent = '線上'; el.title='已連上 API'; }\n      else { el.className = 'badge offline'; el.textContent = '離線模式'; el.title='離線或 API 不可用'; }\n    }\n    function setStatus(msg, cls='warn'){ const el = document.getElementById('syncStatus'); el.textContent = msg; el.className = status ${cls}; }\n\n    // ===== 狀態 =====\n    let goal = parseInt(localStorage.getItem(LS.goal)) || 2000;\n    let current = parseInt(localStorage.getItem(LS.cur) || '0');\n    let history = JSON.parse(localStorage.getItem(LS.hist) || '[]');\n    document.getElementById('goal').value = goal;\n\n    // ===== UI 更新 =====\n
-
