@@ -1,37 +1,282 @@
-<!doctype html>
-<html lang="zh-Hant">
+<!DOCTYPE html><html lang="zh">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>喝水</title>
-<link rel="stylesheet" href="assets/styles.css"/>
-<script defer src="assets/app.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>每日喝水進度圖</title>
+  <style>
+    body { font-family: Arial, sans-serif; background-color: #ffeef5; text-align: center; margin: 0; padding: 0; }
+    header { background-color: #ff85a2; padding: 20px; color: white; font-size: 22px; font-weight: bold; }
+    .card { background: #ffffff; margin: 20px auto; padding: 20px; border-radius: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); width: 90%; max-width: 640px; }
+    .progress-container { margin: 20px 0; }
+    .circle { position: relative; width: 220px; height: 220px; border-radius: 50%; background: conic-gradient(#4285f4 calc(var(--percent) * 1%), #e0e0e0 0); display: flex; align-items: center; justify-content: center; margin: auto; transition: background 0.8s ease; }
+    .circle span { position: absolute; font-size: 20px; font-weight: bold; color: #333; text-align: center; }
+    .note { margin-top: 15px; font-size: 16px; color: #666; }
+    .celebration { font-size: 18px; color: #ff4081; margin-top: 10px; }
+    input[type="number"], select { padding: 8px; margin: 10px; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; }
+    button { padding: 8px 16px; background-color: #4285f4; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; margin: 5px; }
+    button:hover { background-color: #3367d6; }
+    .btn-ghost { background: #eef3ff; color: #2d51c4; }
+    .status { font-size: 12px; color: #6b7280; margin-top: 6px; }
+    canvas { max-width: 100%; }
+  </style>
 </head>
 <body>
-<div class="container">
-  <div class="header">
-    <div class="logo">💗 <span data-i18n="title">我照顧你放心</span></div>
-    <span class="badge" data-i18n="version">v1.1</span>
-  </div>
-  <div class="langs"></div>
-
-  <div class="card">
-    <div class="tabs">
-      <a id="tab-home" href="index.html" data-i18n="nav.home">首頁</a>
-      <a id="tab-water" href="#" class="active" data-i18n="nav.water">喝水</a>
-      <a id="tab-waterg" href="water-graph.html" data-i18n="nav.waterGraph">喝水進度圖</a>
-      <a id="tab-diet" href="diet.html" data-i18n="nav.diet">飲食</a>
-      <a id="tab-bp" href="bp.html" data-i18n="nav.bp">血壓</a>
-    </div>
-
-    <div id="waterMount"></div>
+  <header>每日喝水進度圖</header>  <div class="card">
+    <h2>我的喝水紀錄（雲端同步）</h2>
+    <label for="goal">今日目標：</label>
+    <select id="goal" onchange="changeGoal()">
+      <option value="1500">1500 cc</option>
+      <option value="1800">1800 cc</option>
+      <option value="2000" selected>2000 cc</option>
+      <option value="2500">2500 cc</option>
+    </select>
+    <br>
+    <input type="number" id="waterInput" placeholder="輸入喝水量 (cc)">
+    <button onclick="addWater()">新增</button>
+    <button onclick="resetDaily()">重置</button>
+    <button class="btn-ghost" onclick="manualSync()">立即同步</button>
+    <div class="status" id="syncStatus">尚未同步</div><div class="progress-container">
+  <div class="circle" id="progressCircle" style="--percent: 0;">
+    <span id="progressText">0 / 2000 cc<br>0%</span>
   </div>
 </div>
+<div class="note" id="note">加油，還差 2000 cc！</div>
+<div class="celebration" id="celebration" style="display:none;">🎉 恭喜完成今日喝水目標！</div>
 
-<script>
-  CareSite.mountLangButtons();
-  CareSite.setActiveTab("tab-water");
-  CareSite.loadWaterPage();
-</script>
-</body>
+  </div>  <div class="card">
+    <h2>最近 7 天喝水完成率</h2>
+    <canvas id="historyChart" width="640" height="280"></canvas>
+  </div>  <script>
+    // === 設定：把下面換成你的 Apps Script 網址 ===
+    const API_URL = "https://script.google.com/macros/s/AKfycbxxxxxxx/exec"; // TODO: 換成你的部署網址
+
+    // === LocalStorage Key ===
+    const LS = {
+      cur: 'waterCurrent',
+      goal: 'waterGoal',
+      last: 'lastDate',
+      hist: 'waterHistory'
+    };
+
+    let goal = parseInt(localStorage.getItem(LS.goal)) || 2000;
+    let current = 0;
+    let history = JSON.parse(localStorage.getItem(LS.hist) || '[]');
+
+    document.getElementById('goal').value = goal;
+
+    // ===== UI 更新 =====
+    function updateProgress() {
+      const percent = Math.min((current / goal) * 100, 150);
+      const circle = document.getElementById('progressCircle');
+      const text = document.getElementById('progressText');
+      const note = document.getElementById('note');
+      const celebration = document.getElementById('celebration');
+
+      circle.style.setProperty('--percent', percent);
+      circle.style.background = `conic-gradient(#4285f4 ${percent}%, #e0e0e0 0)`;
+      text.innerHTML = `${current} / ${goal} cc<br>${percent.toFixed(0)}%`;
+
+      if (current >= goal) { note.innerText = '注意，超過目標啦 💧'; celebration.style.display = 'block'; }
+      else { note.innerText = `加油，還差 ${Math.max(goal - current, 0)} cc！`; celebration.style.display = 'none'; }
+
+      drawHistory();
+    }
+
+    // ===== 本地操作 =====
+    function addWater() {
+      const input = document.getElementById('waterInput');
+      const value = parseInt(input.value);
+      if (!isNaN(value) && value > 0) {
+        current += value;
+        localStorage.setItem(LS.cur, current);
+        localStorage.setItem(LS.last, new Date().toDateString());
+        updateProgress();
+        input.value = '';
+        queueSync();
+      }
+    }
+
+    function saveHistory(dateStr, amount, dayGoal) {
+      let arr = JSON.parse(localStorage.getItem(LS.hist)||'[]');
+      const idx = arr.findIndex(r => r.date === dateStr);
+      const rec = { date: dateStr, amount: amount||0, goal: dayGoal||goal };
+      if (idx >= 0) arr[idx] = rec; else arr.push(rec);
+      if (arr.length > 180) arr = arr.slice(-180);
+      localStorage.setItem(LS.hist, JSON.stringify(arr));
+      history = arr;
+    }
+
+    function resetDaily() {
+      const today = new Date().toDateString();
+      saveHistory(today, current, goal); // 存下今天紀錄再歸零
+      current = 0;
+      localStorage.setItem(LS.cur, current);
+      localStorage.setItem(LS.last, today);
+      updateProgress();
+      queueSync();
+    }
+
+    function changeGoal() {
+      goal = parseInt(document.getElementById('goal').value);
+      localStorage.setItem(LS.goal, goal);
+      updateProgress();
+      queueSync();
+    }
+
+    function checkDailyReset() {
+      const lastDate = localStorage.getItem(LS.last);
+      const today = new Date().toDateString();
+      if (lastDate && lastDate !== today) {
+        const savedAmt = parseInt(localStorage.getItem(LS.cur)||'0');
+        const savedGoal = parseInt(localStorage.getItem(LS.goal)||goal);
+        saveHistory(lastDate, savedAmt, savedGoal);
+        current = 0;
+        localStorage.setItem(LS.cur, current);
+        localStorage.setItem(LS.last, today);
+      } else {
+        const saved = parseInt(localStorage.getItem(LS.cur));
+        if (!isNaN(saved)) current = saved;
+      }
+      history = JSON.parse(localStorage.getItem(LS.hist)||'[]');
+      updateProgress();
+    }
+
+    // ====== 畫 7 日圖表（Canvas）======
+    function drawHistory() {
+      const canvas = document.getElementById('historyChart');
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+
+      const todayStr = new Date().toDateString();
+      const map = new Map((history||[]).map(h => [h.date, h]));
+      const days = [];
+      for (let i=6; i>=0; i--) {
+        const d = new Date(); d.setDate(d.getDate()-i);
+        const key = d.toDateString();
+        const label = `${d.getMonth()+1}/${d.getDate()}`;
+        if (key === todayStr) days.push({ label, amount: current, goal });
+        else {
+          const rec = map.get(key) || { amount: 0, goal };
+          days.push({ label, amount: rec.amount||0, goal: rec.goal||goal });
+        }
+      }
+      const pad = 40; const w = canvas.width - pad*2; const h = canvas.height - pad*2;
+      ctx.strokeStyle = '#ddd'; ctx.lineWidth = 1; ctx.font = '12px Arial'; ctx.fillStyle = '#444';
+      for (let i=0; i<=4; i++) { const y = pad + (h/4)*i; ctx.beginPath(); ctx.moveTo(pad,y); ctx.lineTo(pad+w,y); ctx.stroke(); }
+      ctx.beginPath(); ctx.moveTo(pad, pad+h); ctx.lineTo(pad+w, pad+h); ctx.stroke();
+      const bw = w/7*0.6; const gap = w/7*0.4; let x = pad + gap/2;
+      days.forEach(d => {
+        const pct = Math.min((d.amount/(d.goal||1))*100, 150);
+        const barH = Math.min(pct, 120)/120 * h;
+        const y = pad + h - barH;
+        ctx.fillStyle = '#4285f4';
+        ctx.fillRect(x, y, bw, barH);
+        ctx.fillStyle = '#444';
+        ctx.textAlign = 'center';
+        ctx.fillText(d.label, x+bw/2, pad+h+14);
+        ctx.fillText(`${Math.round(pct)}%`, x+bw/2, y-6);
+        x += bw + gap;
+      });
+    }
+
+    // ====== 與 Apps Script 同步 ======
+    async function syncToSheet(dateStr, amount, dayGoal) {
+      if (!API_URL || API_URL.includes('xxxx')) return; // 尚未設定 URL 則跳過
+      setStatus('同步中…');
+      try {
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ date: dateStr, amount, goal: dayGoal })
+        });
+        await res.json();
+        setStatus('已同步到雲端 ✅');
+      } catch (e) {
+        console.error(e);
+        setStatus('同步失敗（稍後會重試）');
+        rememberPending(dateStr, amount, dayGoal);
+      }
+    }
+
+    async function loadFromSheet() {
+      if (!API_URL || API_URL.includes('xxxx')) { drawHistory(); return; }
+      setStatus('從雲端載入中…');
+      try {
+        const res = await fetch(API_URL);
+        const rows = await res.json();
+        // 嘗試跳過標題列：只保留第一欄可被 Date 解析或像 2025-09-22 的列
+        const parsed = [];
+        for (let i=0; i<rows.length; i++) {
+          const r = rows[i];
+          if (!r || r.length < 2) continue;
+          const d = new Date(r[0]);
+          if (isNaN(d.getTime())) {
+            // 非日期：可能是標題列，跳過
+            continue;
+          }
+          parsed.push({ date: d.toDateString(), amount: Number(r[1])||0, goal: Number(r[2])||goal });
+        }
+        // 只保留最近 180 天以內
+        parsed.sort((a,b)=> new Date(a.date)-new Date(b.date));
+        const cutoff = new Date(); cutoff.setDate(cutoff.getDate()-180);
+        const filtered = parsed.filter(r => new Date(r.date) >= cutoff);
+        localStorage.setItem(LS.hist, JSON.stringify(filtered));
+        history = filtered;
+        setStatus('雲端資料已載入 ✅');
+        drawHistory();
+      } catch (e) {
+        console.error(e);
+        setStatus('雲端載入失敗，使用本機資料');
+        drawHistory();
+      }
+    }
+
+    // ====== 待補同步（離線緩存）======
+    function rememberPending(dateStr, amount, dayGoal) {
+      const pend = JSON.parse(localStorage.getItem('waterPending')||'[]');
+      pend.push({ date: dateStr, amount, goal: dayGoal });
+      localStorage.setItem('waterPending', JSON.stringify(pend));
+    }
+
+    async function flushPending() {
+      if (!API_URL || API_URL.includes('xxxx')) return;
+      const pend = JSON.parse(localStorage.getItem('waterPending')||'[]');
+      if (!pend.length) return;
+      for (const p of pend) {
+        try { await syncToSheet(p.date, p.amount, p.goal); } catch(_){}
+      }
+      localStorage.removeItem('waterPending');
+    }
+
+    // 排程同步：避免太頻繁
+    let syncTimer = null;
+    function queueSync() {
+      if (syncTimer) clearTimeout(syncTimer);
+      syncTimer = setTimeout(()=>{
+        const today = new Date().toDateString();
+        syncToSheet(today, current, goal);
+      }, 800);
+    }
+    function manualSync(){ const today = new Date().toDateString(); syncToSheet(today, current, goal); }
+
+    function setStatus(txt){ document.getElementById('syncStatus').innerText = txt; }
+
+    // 跨分頁即時同步
+    window.addEventListener('storage', (e) => {
+      if ([LS.cur,LS.goal,LS.last,LS.hist].includes(e.key)) {
+        goal = parseInt(localStorage.getItem(LS.goal)) || goal;
+        const saved = parseInt(localStorage.getItem(LS.cur));
+        if (!isNaN(saved)) current = saved;
+        history = JSON.parse(localStorage.getItem(LS.hist)||'[]');
+        updateProgress();
+      }
+    });
+
+    // 初始化
+    (async function init(){
+      checkDailyReset();
+      await loadFromSheet();
+      await flushPending();
+    })();
+  </script></body>
 </html>
