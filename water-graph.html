@@ -1,243 +1,116 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>我照顧你放心｜喝水進度圖</title>
-  <style>
-    :root{
-      --bg:#faf6f1; --fg:#3c2c2c; --muted:#7c6a6a;
-      --card:#fff7ea; --accent:#ff9800; --accent-2:#fdd39c;
-      --chip:#eee; --chip-active:#ff9800; --chip-text:#fff;
-      --ring:#ffe5bf; --ring-fill:#ff9800;
-    }
-    *{box-sizing:border-box}
-    body{margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,'Noto Sans TC',sans-serif;
-         background:var(--bg); color:var(--fg); line-height:1.55;}
-    .wrap{max-width:960px; margin:auto; padding:20px 16px 56px;}
-    header{display:flex; align-items:center; gap:12px; margin-bottom:8px;}
-    header h1{margin:0; font-size:1.8rem; display:flex; align-items:center; gap:.5rem;}
-    header .ver{margin-left:.25rem; font-size:.85rem; color:var(--muted)}
-    .lang{margin:6px 0 16px; display:flex; gap:10px; flex-wrap:wrap;}
-    .lang button{border:1px solid #ddd; background:#fff; padding:.4rem .8rem;
-      border-radius:10px; cursor:pointer}
-    .lang button.active{background:var(--chip-active); color:var(--chip-text); border-color:transparent}
-    nav.tabs{display:flex; gap:.6rem; flex-wrap:wrap; margin:.25rem 0 20px}
-    nav.tabs a{display:inline-block; padding:.5rem 1rem; border-radius:14px; border:1px solid #ddd;
-      background:#fff; text-decoration:none; color:inherit}
-    nav.tabs a.active{background:var(--chip-active); color:var(--chip-text); border-color:transparent}
-
-    .card{background:#fff; border-radius:16px; box-shadow:0 6px 20px rgba(0,0,0,.06); padding:16px;}
-    .hero{display:grid; grid-template-columns: 260px 1fr; gap:18px; align-items:center;}
-    @media (max-width:720px){ .hero{grid-template-columns:1fr} }
-    .ring-box{display:grid; place-items:center; padding:8px}
-    svg{overflow:visible}
-    .kpi{display:flex; gap:18px; flex-wrap:wrap; margin-top:6px;}
-    .kpi .chip{background:var(--card); border:1px dashed #e5c99b; padding:.5rem .8rem; border-radius:12px}
-    .hint{margin-top:8px; font-weight:600}
-    .muted{color:var(--muted)}
-    .section-title{font-size:1.1rem; margin:18px 0 10px; font-weight:700}
-    .spacer{height:22px}
-    /* 舊版圖表插槽外框（可移除） */
-    .legacy{margin-top:18px; padding:12px; border:1px dashed #d8c7a1; border-radius:12px; background:#fffdf7}
-  </style>
-</head>
-<body>
-  <div class="wrap">
-    <header>
-      <div style="font-size:1.8rem">💗</div>
-      <h1 data-i18n="title">我照顧你放心</h1>
-      <span class="ver">v1.1</span>
-    </header>
-
-    <!-- 語言切換 -->
-    <div class="lang" role="group" aria-label="language">
-      <button data-lang="zh" class="active">繁體中文</button>
-      <button data-lang="id">Bahasa Indonesia</button>
-      <button data-lang="en">English</button>
-    </div>
-
-    <!-- 分頁按鈕 -->
-    <nav class="tabs">
-      <a href="index.html" data-i18n="home">首頁</a>
-      <a href="bp.html" data-i18n="bp">血壓</a>
-      <a href="visitor.html" data-i18n="visitor">訪客</a>
-      <a href="buy.html" data-i18n="buy">代買</a>
-      <a href="diet.html" data-i18n="diet">飲食</a>
-      <a href="water.html" data-i18n="water">喝水</a>
-      <a href="water-graph.html" class="active" data-i18n="waterGraph">喝水進度圖</a>
-    </nav>
-
-    <!-- 進度圖卡片 -->
-    <div class="card">
-      <div class="section-title" data-i18n="progressTitle">今日喝水進度</div>
-
-      <div class="hero">
-        <div class="ring-box">
-          <!-- 進度環 -->
-          <svg width="220" height="220" viewBox="0 0 220 220" aria-label="water-progress">
-            <!-- 背景環 -->
-            <circle cx="110" cy="110" r="92" stroke="var(--ring)" stroke-width="22" fill="none"/>
-            <!-- 進度環（由 JS 設定 strokeDashoffset） -->
-            <circle id="ring" cx="110" cy="110" r="92" stroke="var(--ring-fill)" stroke-width="22"
-                    stroke-linecap="round" fill="none"
-                    transform="rotate(-90 110 110)"/>
-            <!-- 中央文字 -->
-            <g dominant-baseline="middle" text-anchor="middle">
-              <text id="pct" x="110" y="98" font-size="34" font-weight="700">0%</text>
-              <text id="summary" x="110" y="132" font-size="14" class="muted">0 / 1500 cc</text>
-            </g>
-          </svg>
-        </div>
-
-        <div>
-          <div class="kpi">
-            <div class="chip"><span data-i18n="today">今日</span>：<b><span id="val">0</span> cc</b></div>
-            <div class="chip"><span data-i18n="target">目標</span>：<b><span id="goal">1500</span> cc</b></div>
-            <div class="chip"><span data-i18n="ratio">達成率</span>：<b><span id="ratio">0%</span></b></div>
-          </div>
-          <div class="hint" id="hintText">…</div>
-          <div class="muted" style="margin-top:8px" data-i18n="hintNote">
-            * 提示會依達成率自動變換。
-          </div>
-        </div>
-      </div>
-
-      <div class="spacer"></div>
-
-      <!-- 舊版飲水進度圖插槽（選擇性） -->
-      <div class="legacy">
-        <div class="section-title" data-i18n="legacyTitle">（可選）舊版進度圖</div>
-        <div class="muted" data-i18n="legacyHowto">
-          若你已有「飲水進度圖_250916_122437.html」，請把主要圖表區塊貼到下面這個 DIV 中：
-        </div>
-        <div id="legacy-graph" style="margin-top:10px;"></div>
-      </div>
-    </div>
-  </div>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>我照顧你放心</title>
   <script>
-    // ===== i18n 文案 =====
+    // === 多語言字典 ===
     const I18N = {
-      zh:{
-        title:"我照顧你放心",
-        home:"首頁", bp:"血壓", visitor:"訪客", buy:"代買", diet:"飲食",
-        water:"喝水", waterGraph:"喝水進度圖",
-        progressTitle:"今日喝水進度",
-        today:"今日", target:"目標", ratio:"達成率",
-        hintNote:"* 提示會依達成率自動變換。",
-        legacyTitle:"（可選）舊版進度圖",
-        legacyHowto:"若你已有「飲水進度圖_250916_122437.html」，請把主要圖表區塊貼到下面這個 DIV 中：",
-        tips:{
-          low:"今天先補一杯水吧！小口慢飲，對腎臟更溫和。",
-          mid:"喝得不錯～記得分時段補水，避免一次喝太多。",
-          near:"快達標了！再補個 200–300cc 就更棒。",
-          done:"太棒了！今天的水分已達標，記得晚上少量即可。"
-        }
+      zh: {
+        feature_form: "登錄表單",
+        feature_water: "每日喝水進度圖",
+        feature_weight: "體重變化圖",
+        all_pages: "全部分頁"
       },
-      id:{
-        title:"Aku Jaga, Kamu Tenang",
-        home:"Beranda", bp:"Tekanan Darah", visitor:"Tamu", buy:"Titip Beli",
-        diet:"Makan", water:"Minum", waterGraph:"Grafik Minum",
-        progressTitle:"Kemajuan Minum Hari Ini",
-        today:"Hari ini", target:"Target", ratio:"Pencapaian",
-        hintNote:"* Saran berubah otomatis sesuai persentase.",
-        legacyTitle:"(Opsional) Grafik versi lama",
-        legacyHowto:"Jika sudah punya file grafik lama, tempelkan blok utamanya ke DIV di bawah:",
-        tips:{
-          low:"Ayo minum segelas dulu. Teguk pelan agar nyaman di tubuh.",
-          mid:"Bagus! Minum bertahap sepanjang hari ya.",
-          near:"Hampir tercapai! Tambah 200–300cc lagi.",
-          done:"Mantap! Target hari ini tercapai, malam cukup sedikit saja."
-        }
+      en: {
+        feature_form: "Log Form",
+        feature_water: "Water Progress",
+        feature_weight: "Weight Chart",
+        all_pages: "All Pages"
       },
-      en:{
-        title:"I Care For You",
-        home:"Home", bp:"Blood Pressure", visitor:"Visitors", buy:"Errands",
-        diet:"Diet", water:"Water", waterGraph:"Water Graph",
-        progressTitle:"Today's Hydration Progress",
-        today:"Today", target:"Target", ratio:"Achieved",
-        hintNote:"* Tips change automatically based on your progress.",
-        legacyTitle:"(Optional) Legacy Chart",
-        legacyHowto:"If you already have the legacy chart HTML, paste its main block into the DIV below:",
-        tips:{
-          low:"Start with a glass of water. Sip slowly for comfort.",
-          mid:"Nice! Keep hydrating in small portions.",
-          near:"Almost there! Add another 200–300cc.",
-          done:"Great job! You've hit today's target; keep it light tonight."
-        }
+      id: {
+        feature_form: "Formulir Catatan",
+        feature_water: "Grafik Minum Harian",
+        feature_weight: "Grafik Berat Badan",
+        all_pages: "Semua Halaman"
       }
     };
 
-    // ===== 語言切換 =====
-    const $ = (s,root=document)=>root.querySelector(s);
-    const $$ = (s,root=document)=>[...root.querySelectorAll(s)];
-    let lang = localStorage.getItem('pc_lang') || 'zh';
-    function applyI18n(){
-      const t = I18N[lang];
-      $$('[data-i18n]').forEach(el=>{
-        const key = el.getAttribute('data-i18n');
-        const seg = key.split('.');
-        let val = t;
-        seg.forEach(k=>{ if(val) val=val[k]; });
-        if(typeof val === 'string') el.textContent = val || '';
+    let currentLang = localStorage.getItem("lang") || "zh";
+
+    function t(key) {
+      return I18N[currentLang][key] || key;
+    }
+
+    // === Google Sheets 基本網址 ===
+    const BASE_URL = "https://docs.google.com/spreadsheets/d/1m2erIP9vW4L_Tmpu87c8tffRbdG7G7blxT7auC-havY/edit";
+    function baseSheetUrl(gid){ return `${BASE_URL}?gid=${gid}`; }
+
+    const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSd2TnHCLOAjaYwL1p29U0wXmsOjSKt6svV2qDX3UqB0KAjYlw/viewform";
+
+    // 置頂功能按鈕 (已將喝水改為 water.html)
+    const FEATURE_BUTTONS = [
+      { key: "feature_form",  url: FORM_URL,                 emoji: "📝", color: "bg-pink-200 hover:bg-pink-300" },
+      { key: "feature_water", url: "water.html",             emoji: "💧", color: "bg-blue-200 hover:bg-blue-300" },
+      { key: "feature_weight",url: baseSheetUrl(2058618108), emoji: "⚖️", color: "bg-green-200 hover:bg-green-300" }
+    ];
+
+    const ALL_PAGES = [
+      { name: "護理", gid: 896880297 },
+      { name: "血壓", gid: 1575861756 },
+      { name: "飲食", gid: 1286045787 },
+      { name: "喝水", gid: 1867949360 },
+      { name: "體重", gid: 2058618108 }
+    ];
+
+    function renderUI(){
+      // 功能按鈕
+      const btnContainer = document.getElementById("feature-buttons");
+      FEATURE_BUTTONS.forEach(b => {
+        const a = document.createElement("a");
+        a.href = b.url;
+        a.target = "_self"; // 改為同分頁開啟
+        a.className = `m-2 px-4 py-2 rounded-xl shadow ${b.color}`;
+        a.textContent = `${b.emoji} ${t(b.key)}`;
+        btnContainer.appendChild(a);
       });
-      $('title').textContent = `${t.title}｜${I18N[lang].waterGraph}`;
-      $$('.lang button').forEach(b=>b.classList.toggle('active', b.dataset.lang===lang));
-      // 更新提示（因語言變更）
-      updateHint(currentRatio);
-    }
-    $$('.lang button').forEach(b=>{
-      b.addEventListener('click', ()=>{
-        lang = b.dataset.lang;
-        localStorage.setItem('pc_lang', lang);
-        applyI18n();
+
+      // 全部分頁
+      const list = document.getElementById("all-pages");
+      ALL_PAGES.forEach(p => {
+        const li = document.createElement("li");
+        const a = document.createElement("a");
+        a.href = baseSheetUrl(p.gid);
+        a.target = "_blank";
+        a.textContent = p.name;
+        li.appendChild(a);
+        list.appendChild(li);
       });
-    });
 
-    // ===== 進度運算（可用 URL 覆蓋：?today=1550&target=1500） =====
-    const url = new URL(location.href);
-    const todayVal = Number(url.searchParams.get('today') ?? localStorage.getItem('water_today') ?? 0);
-    const goalVal  = Number(url.searchParams.get('target') ?? localStorage.getItem('water_goal') ?? 1500);
-
-    // 也可在其它頁面把今日值寫進 localStorage：localStorage.setItem('water_today', 1550)
-    // 這頁就會自動抓到。
-
-    // 畫環
-    const R = 92, C = 2*Math.PI*R;
-    const ring = $('#ring');
-    ring.setAttribute('stroke-dasharray', C);
-    function setProgress(p){ // p: 0~1
-      const off = C*(1-p);
-      ring.setAttribute('stroke-dashoffset', off);
-      $('#pct').textContent = Math.round(p*100)+'%';
+      document.getElementById("all-pages-title").textContent = t("all_pages");
     }
 
-    // 更新 KPI + 提示
-    let currentRatio = 0;
-    function updateHint(r){
-      const t = I18N[lang].tips;
-      let msg = t.low;
-      if(r >= 1) msg = t.done;
-      else if(r >= .85) msg = t.near;
-      else if(r >= .5) msg = t.mid;
-      $('#hintText').textContent = msg;
+    function changeLang(lang){
+      currentLang = lang;
+      localStorage.setItem("lang", lang);
+      location.reload();
     }
 
-    function init(){
-      $('#val').textContent = todayVal.toString();
-      $('#goal').textContent = goalVal.toString();
-      currentRatio = goalVal>0 ? Math.min(1, todayVal/goalVal) : 0;
-      $('#ratio').textContent = Math.round(currentRatio*100)+'%';
-      $('#summary').textContent = `${todayVal} / ${goalVal} cc`;
-      setProgress(currentRatio);
-      applyI18n();
-    }
-    init();
-
-    // =====（選擇）把舊檔案內容貼到 #legacy-graph 也能顯示 =====
-    // 你可以直接把舊版「飲水進度圖_XXXX.html」中的主要圖表 HTML 貼進下方：
-    // document.getElementById('legacy-graph').innerHTML = `<!-- 你的舊圖表 HTML 片段 -->`;
+    window.onload = renderUI;
   </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-pink-50 text-center">
+  <header class="bg-pink-400 text-white py-4 text-2xl font-bold">我照顧你放心</header>
+
+  <div class="p-4">
+    <div id="feature-buttons" class="flex flex-wrap justify-center"></div>
+
+    <div class="mt-6">
+      <h2 id="all-pages-title" class="text-lg font-semibold mb-2"></h2>
+      <ul id="all-pages" class="space-y-2"></ul>
+    </div>
+
+    <div class="mt-6">
+      <button onclick="changeLang('zh')">中文</button>
+      <button onclick="changeLang('en')">English</button>
+      <button onclick="changeLang('id')">Bahasa</button>
+    </div>
+  </div>
 </body>
 </html>
+
+
+{"updates":[{"pattern":".*","multiple":true,"replacement":"<!DOCTYPE html>\n<html lang="zh">\n<head>\n  <meta charset="UTF-8" />\n  <meta name="viewport" content="width=device-width, initial-scale=1.0" />\n  <title>每日喝水進度圖</title>\n  <style>\n    body{font-family:Arial, sans-serif;background:#ffeef5;margin:0;color:#1f2937;text-align:center}\n    header{background:#ff85a2;color:#fff;padding:16px 10px;font-weight:700;font-size:22px}\n    .card{background:#fff;margin:20px auto;padding:20px;border-radius:16px;box-shadow:0 4px 10px rgba(0,0,0,.08);width:90%;max-width:680px}\n    .row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}\n    input[type=number],select,button{padding:10px 12px;border-radius:10px;border:1px solid #d1d5db;font-size:16px}\n    button{background:#4285f4;border:none;color:#fff;cursor:pointer}\n    button:hover{background:#3367d6}\n    .btn-ghost{background:#eef3ff;color:#2d51c4}\n    .btn-danger{background:#ef4444}\n    .btn-danger:hover{background:#dc2626}\n    .status{font-size:12px;margin-top:6px}\n    .status.ok{color:#059669}.status.warn{color:#d97706}.status.err{color:#dc2626}\n    .badge{display:inline-block;padding:2px 8px;border-radius:9999px;font-size:12px;margin-left:6px}\n    .badge.offline{background:#fef3c7;color:#92400e}\n    .badge.online{background:#dcfce7;color:#065f46}\n    .progress-container{margin:18px 0}\n    .circle{position:relative;width:220px;height:220px;border-radius:50%;background:conic-gradient(#4285f4 calc(var(--percent) * 1%), #e5e7eb 0);display:flex;align-items:center;justify-content:center;margin:auto;transition:background .6s ease}\n    .circle span{position:absolute;font-size:20px;font-weight:700;color:#374151;line-height:1.3}\n    canvas{max-width:100%}\n  </style>\n</head>\n<body>\n  <header>\n    每日喝水進度圖\n    <span id="netBadge" class="badge offline" title="目前為離線或未連上 API">離線模式</span>\n  </header>\n\n  <div class="card">\n    <h2>我的喝水紀錄（雲端同步）</h2>\n    <div class="row">\n      <label for="goal">今日目標：</label>\n      <select id="goal" onchange="changeGoal()">\n        <option value="1500">1500 cc</option>\n        <option value="1800">1800 cc</option>\n        <option value="2000" selected>2000 cc</option>\n        <option value="2500">2500 cc</option>\n      </select>\n    </div>\n    <div class="row">\n      <input type="number" id="waterInput" placeholder="輸入喝水量 (cc)" min="1" max="10000" />\n      <button id="btnAdd" onclick="addWater()">新增</button>\n      <button id="btnReset" class="btn-danger" onclick="resetDaily()">重置</button>\n      <button id="btnSync" class="btn-ghost" onclick="manualSync()">立即同步</button>\n    </div>\n    <div id="syncStatus" class="status warn">尚未同步</div>\n\n    <div class="progress-container">\n      <div class="circle" id="progressCircle" style="--percent:0"><span id="progressText">0 / 2000 cc<br/>0%</span></div>\n    </div>\n    <div id="note">加油，還差 2000 cc！</div>\n    <div id="celebration" style="display:none">🎉 恭喜完成今日喝水目標！</div>\n  </div>\n\n  <div class="card">\n    <h2>最近 7 天喝水完成率</h2>\n    <canvas id="historyChart" width="680" height="280"></canvas>\n  </div>\n\n  <script>\n    // ===== 工具 & 常數 =====\n    function todayISO(){ return new Date().toISOString().slice(0,10); }\n    const API_URL = "https://script.google.com/macros/s/AKfycbxxxxxxx/exec"; // ← 換成你的 exec 連結\n    const LS = { cur:'waterCurrent', goal:'waterGoal', last:'lastDate', hist:'waterHistory', pend:'waterPending' };\n\n    // 安全 fetch（含逾時）\n    async function fetchWithTimeout(url, opts={}, timeoutMs=8000){\n      const ctrl = new AbortController();\n      const t = setTimeout(()=>ctrl.abort(), timeoutMs);\n      try{ return await fetch(url, { ...opts, signal: ctrl.signal }); }\n      finally{ clearTimeout(t); }\n    }\n\n    function setBadge(online){\n      const el = document.getElementById('netBadge');\n      if (online){ el.className = 'badge online'; el.textContent = '線上'; el.title='已連上 API'; }\n      else { el.className = 'badge offline'; el.textContent = '離線模式'; el.title='離線或 API 不可用'; }\n    }\n    function setStatus(msg, cls='warn'){ const el = document.getElementById('syncStatus'); el.textContent = msg; el.className = status ${cls}; }\n\n    // ===== 狀態 =====\n    let goal = parseInt(localStorage.getItem(LS.goal)) || 2000;\n    let current = parseInt(localStorage.getItem(LS.cur) || '0');\n    let history = JSON.parse(localStorage.getItem(LS.hist) || '[]');\n    document.getElementById('goal').value = goal;\n\n    // ===== UI 更新 =====\n
+
