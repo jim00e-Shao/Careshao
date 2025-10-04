@@ -4,7 +4,7 @@
     { "label": "近期圖表與統計", "url": "https://docs.google.com/spreadsheets/d/你的試算表ID/edit#gid=0" }
   ],
   "buttons": [
-    { "label": "test", "url": "https://docs.google.com/forms/d/AAA/viewform" },
+    { "label": "身體", "url": "https://docs.google.com/forms/d/AAA/viewform" },
     { "label": "護理", "url": "https://docs.google.com/forms/d/BBB/viewform" },
     { "label": "血壓", "url": "https://docs.google.com/forms/d/CCC/viewform" },
     { "label": "血糖", "url": "https://docs.google.com/forms/d/DDD/viewform" },
