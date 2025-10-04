@@ -89,7 +89,7 @@
       }catch(e){
         console.warn('links.json 載入失敗；用預設按鈕。', e);
         const grid = document.getElementById('btn-grid');
-        ['身體','test','血壓','血糖','飲食','喝水','大便','小便','其他'].forEach(t=>{
+        ['身體','護理','血壓','血糖','飲食','喝水','大便','小便','其他'].forEach(t=>{
           const d=document.createElement('div'); d.className='btn';
           d.innerHTML=`<a href="#" aria-label="${t}">${t}</a>`; grid.appendChild(d);
         });
