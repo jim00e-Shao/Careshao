@@ -1,29 +1,17 @@
 {
-  "tip": "歡迎！這是一條黃色提示；在這裡你可以放重要公告或短訊息。",
   "hero": [
-    {
-      "label": "立即預約（中文）",
-      "url": "https://example.com/zh/reserve",
-      "note": "快速進入預約頁面"
-    },
-    {
-      "label": "Daftar Sekarang（Indonesia）",
-      "url": "https://example.com/id/register",
-      "note": "Pendaftaran cepat"
-    }
+    { "label": "今日快速登錄", "url": "https://docs.google.com/forms/d/你的表單ID/viewform" },
+    { "label": "近期圖表與統計", "url": "https://docs.google.com/spreadsheets/d/你的試算表ID/edit#gid=0" }
   ],
   "buttons": [
-    { "label": "首頁", "url": "https://example.com/" },
-    { "label": "服務介紹", "url": "https://example.com/services" },
-    { "label": "常見問題", "url": "https://example.com/faq" },
-    { "label": "聯絡我們", "url": "https://example.com/contact" },
-    { "label": "使用條款", "url": "https://example.com/terms" },
-    { "label": "隱私政策", "url": "https://example.com/privacy" },
-    { "label": "教師入口", "url": "https://example.com/teacher" },
-    { "label": "學生入口", "url": "https://example.com/student" },
-    { "label": "報告中心", "url": "https://example.com/reports" },
-    { "label": "公告", "url": "https://example.com/announcements" },
-    { "label": "下載資料", "url": "https://example.com/downloads" },
-    { "label": "支援", "url": "https://example.com/support" }
+    { "label": "身體", "url": "https://docs.google.com/forms/d/AAA/viewform" },
+    { "label": "護理", "url": "https://docs.google.com/forms/d/BBB/viewform" },
+    { "label": "血壓", "url": "https://docs.google.com/forms/d/CCC/viewform" },
+    { "label": "血糖", "url": "https://docs.google.com/forms/d/DDD/viewform" },
+    { "label": "飲食", "url": "https://docs.google.com/forms/d/EEE/viewform" },
+    { "label": "喝水", "url": "https://docs.google.com/forms/d/FFF/viewform" },
+    { "label": "大便", "url": "https://docs.google.com/forms/d/GGG/viewform" },
+    { "label": "小便", "url": "https://docs.google.com/forms/d/HHH/viewform" },
+    { "label": "其他", "url": "https://docs.google.com/forms/d/III/viewform" }
   ]
 }
