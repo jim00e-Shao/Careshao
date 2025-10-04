@@ -1,17 +1,1 @@
-{
-  "hero": [
-    { "label": "今日快速登錄", "url": "https://docs.google.com/forms/d/你的表單ID/viewform" },
-    { "label": "近期圖表與統計", "url": "https://docs.google.com/spreadsheets/d/你的試算表ID/edit#gid=0" }
-  ],
-  "buttons": [
-    { "label": "身體", "url": "https://docs.google.com/forms/d/AAA/viewform" },
-    { "label": "護理", "url": "https://docs.google.com/forms/d/BBB/viewform" },
-    { "label": "血壓", "url": "https://docs.google.com/forms/d/CCC/viewform" },
-    { "label": "血糖", "url": "https://docs.google.com/forms/d/DDD/viewform" },
-    { "label": "飲食", "url": "https://docs.google.com/forms/d/EEE/viewform" },
-    { "label": "喝水", "url": "https://docs.google.com/forms/d/FFF/viewform" },
-    { "label": "大便", "url": "https://docs.google.com/forms/d/GGG/viewform" },
-    { "label": "小便", "url": "https://docs.google.com/forms/d/HHH/viewform" },
-    { "label": "其他", "url": "https://docs.google.com/forms/d/III/viewform" }
-  ]
-}
+
