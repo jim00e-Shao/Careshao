@@ -1,107 +1,101 @@
-<!DOCTYPE html><html lang="zh">
+<!doctype html>
+<html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>我照顧你放心</title>
-  <script>
-    // === 多語言字典 ===
-    const I18N = {
-      zh: {
-        feature_form: "登錄表單",
-        feature_water: "每日喝水進度圖",
-        feature_weight: "體重變化圖",
-        all_pages: "全部分頁"
-      },
-      en: {
-        feature_form: "Log Form",
-        feature_water: "Water Progress",
-        feature_weight: "Weight Chart",
-        all_pages: "All Pages"
-      },
-      id: {
-        feature_form: "Formulir Catatan",
-        feature_water: "Grafik Minum Harian",
-        feature_weight: "Grafik Berat Badan",
-        all_pages: "Semua Halaman"
-      }
-    };let currentLang = localStorage.getItem("lang") || "zh";
-
-function t(key) {
-  return I18N[currentLang][key] || key;
-}
-
-// === Google Sheets 基本網址 ===
-const BASE_URL = "https://docs.google.com/spreadsheets/d/1m2erIP9vW4L_Tmpu87c8tffRbdG7G7blxT7auC-havY/edit";
-function baseSheetUrl(gid){ return `${BASE_URL}?gid=${gid}`; }
-
-const FORM_URL = "https://docs.google.com/forms/d/e/1FAIpQLSd2TnHCLOAjaYwL1p29U0wXmsOjSKt6svV2qDX3UqB0KAjYlw/viewform";
-
-// 置頂功能按鈕 (已將喝水改為 water.html)
-const FEATURE_BUTTONS = [
-  { key: "feature_form",  url: FORM_URL,                 emoji: "📝", color: "bg-pink-200 hover:bg-pink-300" },
-  { key: "feature_water", url: "water.html",             emoji: "💧", color: "bg-blue-200 hover:bg-blue-300" },
-  { key: "feature_weight",url: baseSheetUrl(2058618108), emoji: "⚖️", color: "bg-green-200 hover:bg-green-300" }
-];
-
-const ALL_PAGES = [
-  { name: "護理", gid: 896880297 },
-  { name: "血壓", gid: 1575861756 },
-  { name: "飲食", gid: 1286045787 },
-  { name: "喝水", gid: 1867949360 },
-  { name: "體重", gid: 2058618108 }
-];
-
-function renderUI(){
-  // 功能按鈕
-  const btnContainer = document.getElementById("feature-buttons");
-  FEATURE_BUTTONS.forEach(b => {
-    const a = document.createElement("a");
-    a.href = b.url;
-    a.target = "_self"; // 改為同分頁開啟
-    a.className = `m-2 px-4 py-2 rounded-xl shadow ${b.color}`;
-    a.textContent = `${b.emoji} ${t(b.key)}`;
-    btnContainer.appendChild(a);
-  });
-
-  // 全部分頁
-  const list = document.getElementById("all-pages");
-  ALL_PAGES.forEach(p => {
-    const li = document.createElement("li");
-    const a = document.createElement("a");
-    a.href = baseSheetUrl(p.gid);
-    a.target = "_blank";
-    a.textContent = p.name;
-    li.appendChild(a);
-    list.appendChild(li);
-  });
-
-  document.getElementById("all-pages-title").textContent = t("all_pages");
-}
-
-function changeLang(lang){
-  currentLang = lang;
-  localStorage.setItem("lang", lang);
-  location.reload();
-}
-
-window.onload = renderUI;
-
-  </script>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>看護紀錄首頁</title>
+  <style>
+    :root{
+      --green:#244d40; --mint:#dbf4ef; --head:#d7f3f0; --note:#fde68a; --tile:#f24b4b;
+      --tile-text:#fff; --grid-border:#e5e7eb;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;background:#f8fafc;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,'Noto Sans TC',sans-serif}
+    .container{max-width:980px;margin:0 auto}
+    /* 頂部表格風導覽 */
+    .topbar{background:var(--head);border-bottom:1px solid #cbd5e1}
+    .topgrid{display:grid;grid-template-columns:120px 1fr 120px 120px 120px}
+    .topcell{padding:.9rem 1rem;border-right:1px solid #cbd5e1;text-align:center;font-weight:700}
+    .topcell:nth-child(2){text-align:left;font-weight:800}
+    .notice{background:var(--note);padding:.6rem 1rem;border-bottom:1px solid #e2e8f0;font-weight:700}
+    /* 中間綠底區 */
+    .hero{background:var(--green);padding:32px 16px 48px}
+    .tile{background:var(--tile);color:var(--tile-text);border-radius:18px;padding:28px 20px;
+          text-align:center;font-size:clamp(20px,2.4vw,30px);line-height:1.4;box-shadow:0 6px 18px rgba(0,0,0,.15);
+          margin:18px auto;max-width:820px;border:2px solid rgba(0,0,0,.05)}
+    .tile a{color:inherit;text-decoration:none;display:block}
+    .tile:active{transform:translateY(1px)}
+    /* 底部按鈕格 */
+    .gridwrap{background:#fff;border-top:1px solid #e5e7eb}
+    .grid{display:grid;grid-template-columns:repeat(9,1fr);border-left:1px solid var(--grid-border)}
+    @media (max-width:900px){ .grid{grid-template-columns:repeat(3,1fr)} }
+    .btn{
+      border-right:1px solid var(--grid-border);border-bottom:1px solid var(--grid-border);
+      padding:14px 8px;text-align:center;font-weight:800;background:#ffffff;
+      cursor:pointer;user-select:none;transition:.12s;
+    }
+    .btn:hover{background:#f3f4f6}
+    .btn a{color:#111827;text-decoration:none;display:block}
+    footer{color:#6b7280;text-align:center;font-size:12px;padding:16px 0}
+  </style>
 </head>
-<body class="bg-pink-50 text-center">
-  <header class="bg-pink-400 text-white py-4 text-2xl font-bold">我照顧你放心</header>  <div class="p-4">
-    <div id="feature-buttons" class="flex flex-wrap justify-center"></div><div class="mt-6">
-  <h2 id="all-pages-title" class="text-lg font-semibold mb-2"></h2>
-  <ul id="all-pages" class="space-y-2"></ul>
-</div>
-
-<div class="mt-6">
-  <button onclick="changeLang('zh')">中文</button>
-  <button onclick="changeLang('en')">English</button>
-  <button onclick="changeLang('id')">Bahasa</button>
-</div>
-
+<body>
+  <div class="topbar">
+    <div class="container">
+      <div class="topgrid">
+        <div class="topcell">中文</div>
+        <div class="topcell" style="background:#fff">Indonesia</div>
+        <div class="topcell"><a href="./login.html" aria-label="登入表" style="color:#111;text-decoration:none">登入表</a></div>
+        <div class="topcell"><a href="./records.html" aria-label="紀錄" style="color:#111;text-decoration:none">紀錄</a></div>
+        <div class="topcell"><a href="./charts.html" aria-label="圖表" style="color:#111;text-decoration:none">圖表</a></div>
+      </div>
+      <div class="notice">提示語：今天喝水量600cc，還要多喝水唷！</div>
+    </div>
   </div>
+
+  <div class="hero">
+    <div class="container">
+      <!-- 兩塊大卡可改成你要的連結或功能 -->
+      <div class="tile"><a id="tile-1" href="#" target="_blank" rel="noopener">各按鍵連結呈現的紀錄、圖片、登錄表單放這裡</a></div>
+      <div class="tile"><a id="tile-2" href="#" target="_blank" rel="noopener">除了綠色區域外，每頁的版面都不動</a></div>
+    </div>
+  </div>
+
+  <div class="gridwrap">
+    <div class="container">
+      <div id="btn-grid" class="grid" aria-label="快速按鈕"></div>
+    </div>
+  </div>
+
+  <footer>© 看護紀錄</footer>
+
+  <script>
+    // 從 links.json 產生按鈕（方便你只改連結，不改版面）
+    async function loadLinks(){
+      try{
+        const res = await fetch('./links.json', {cache:'no-store'});
+        const data = await res.json();
+        // hero 兩塊
+        if(data.hero?.[0]) document.getElementById('tile-1').href = data.hero[0].url;
+        if(data.hero?.[1]) document.getElementById('tile-2').href = data.hero[1].url;
+        // 底部九宮格（可超過 9 個，會自動換行）
+        const grid = document.getElementById('btn-grid');
+        (data.buttons||[]).forEach(item=>{
+          const cell = document.createElement('div');
+          cell.className='btn';
+          cell.innerHTML = `<a href="${item.url}" target="_blank" rel="noopener" aria-label="${item.label}">${item.label}</a>`;
+          grid.appendChild(cell);
+        });
+      }catch(e){
+        console.warn('links.json 載入失敗；用預設按鈕。', e);
+        const grid = document.getElementById('btn-grid');
+        ['身體','護理','血壓','血糖','飲食','喝水','大便','小便','其他'].forEach(t=>{
+          const d=document.createElement('div'); d.className='btn';
+          d.innerHTML=`<a href="#" aria-label="${t}">${t}</a>`; grid.appendChild(d);
+        });
+      }
+    }
+    loadLinks();
+  </script>
 </body>
 </html>
